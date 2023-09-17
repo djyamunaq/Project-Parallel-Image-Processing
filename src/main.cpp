@@ -9,6 +9,15 @@ using std::cout;
 using std::cin;
 using std::endl;
 
+// Function to process a segment of the image.
+void processImageSegment(cv::Mat& input, cv::Mat& output, int startRow, int endRow) {
+    for (int i = startRow; i < endRow; ++i) {
+        for (int j = 0; j < input.cols; ++j) {
+            output.at<float>(i, j) = input.at<float>(i, j); 
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     // Set default num of threads to 1
     int numThreads = 1;
@@ -32,16 +41,33 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Create an output image with the same dimensions as the input.
+    // Create an output image with the same dimensions as the input
     cv::Mat outputImage(inputImage.rows, inputImage.cols, inputImage.type());
 
-    // Calculate the number of rows each thread will process.
+    // Calculate the number of rows each thread will process
     int rowsPerThread = inputImage.rows / numThreads;
 
-    // Vector to store thread objects.
+    // Vector to store thread objects
     std::vector<std::thread> threads;
 
-    cv::imshow("Window Name", inputImage);
+    // Launch threads for parallel processing
+    for (int i = 0; i < numThreads; ++i) {
+        int startRow = i * rowsPerThread;
+        int endRow = (i == numThreads - 1) ? inputImage.rows : (i + 1) * rowsPerThread; // Check if is last row
+
+        threads.emplace_back(processImageSegment, std::ref(inputImage), std::ref(outputImage), startRow, endRow);
+    }
+
+    // Wait for all threads to complete
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    // Save the processed image.
+    cv::imwrite("output.jpg", outputImage);
+
+    // Show the processed image
+    cv::imshow("Processed Image", outputImage);
     cv::waitKey(0);
 
     return 0;
