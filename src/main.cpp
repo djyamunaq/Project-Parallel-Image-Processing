@@ -9,11 +9,11 @@ using std::cout;
 using std::cin;
 using std::endl;
 
-// Function to process a segment of the image.
+// Function to process a segment of the image
 void processImageSegment(cv::Mat& input, cv::Mat& output, int startRow, int endRow) {
     for (int i = startRow; i < endRow; ++i) {
         for (int j = 0; j < input.cols; ++j) {
-            output.at<float>(i, j) = input.at<float>(i, j); 
+            output.at<float>(i, j) = 1000*input.at<float>(i, j); 
         }
     }
 }
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         numThreads = atoi(argv[1]);
 
-        if (numThreads == 0) {
+        if (numThreads <= 0) {
             cout << "Invalid number of threads" << endl;
             return 1;
         }
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     }
 
     // Save the processed image.
-    cv::imwrite("output.jpg", outputImage);
+    cv::imwrite("../data/output.jpg", outputImage);
 
     // Show the processed image
     cv::imshow("Processed Image", outputImage);
